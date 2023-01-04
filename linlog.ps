@@ -1,0 +1,273 @@
+%!PS-Adobe-1.0
+% По умолчанию, постскрипт использует единицу измерения 1 пункт=1/72 дюйма, 
+% а нам нравятся миллиметры.
+
+/Dvn 	133 	def		% Диаметр внешней окружности
+/Dvnint	30	def		% Диаметр внутренней окружности
+
+
+/Rvn 		Dvn	 	2 div 	def	% Радиус внешней окружности
+/Rextsh 	Rvn 		5 sub 	def	% Радиус внешней окружности шкалы
+/Rctrsh 	Rextsh 		2 sub 	def	% Радиус центральной окружности шкалы
+/Rintsh 	Rctrsh 		2 sub 	def	% Радиус внутренней окружности шкалы
+
+/Rvnint 	Dvnint 		2 div 	def	% Радиус внутренней окружности
+/Rgrintsh	Rintsh		6 sub	def	% Радиус внутренней границы шкалы
+
+
+/Htextsh 5 def			% Размер шрифта
+/Htextsmallsh 3.5 def		% Размер шрифта маленького
+/temp 0 def
+
+%------------------------------------------------
+
+% Коэффициенты полинома, апроксимирующерго поляру
+/cp0 31.34052		def	% Коэффициент при X0
+/cp1 -1.31976		def	% при X1
+/cp2 0.02242		def	% при X2	
+/cp3 -1.89196E-4	def	% при X3
+/cp4 8.03488E-7		def	% при X4
+/cp5 -1.36024E-9	def	% при x4
+
+/Vappmin 70 3.6 div	def	% Минимальная горизонтальная скорость для аппроксимирующей функции
+/Vappmax 140 3.6 div	def 	% Максимальная скорость
+
+% абсцисса: скорость в км/ч, ордината: вертикальная скорость в м/с
+% V= 70-150км/ч - Диапазон скоростей для Бланика
+% Масса m=472 кг
+
+%-------------------------------------------------
+
+% Полином, аппроксимирующий поляру
+/polinom
+{
+	/Ex exch 3.6 mul def
+	cp0						% Посчёт с коэффициентом при X0
+	cp1 Ex mul add					% при X1
+	cp2 Ex mul Ex mul add				% при X2
+	cp3 Ex mul Ex mul Ex mul add			% при X3
+	cp4 Ex mul Ex mul Ex mul Ex mul add		% при X4
+	cp5 Ex mul Ex mul Ex mul Ex mul Ex mul add	% при X5
+} def
+
+
+% Собственно функция вычисления оплимальной скорости. В стеке: вершина - скороподъёмность потока(в м/с), следующий - скорость ветра(в км/ч), третий - коэффициент Маккреди( для чайников: -0.2, для сенсеев: ноль или больше ноля)
+/optimaV
+{
+	/Udo exch def
+	/Vdo exch def
+	/Kmkdo exch def
+	/Kdoop 0 def
+	Vappmin 0.1 Vappmax
+	{dup
+		Vdo sub dup
+		polinom 1 Kmkdo sub Udo mul add
+		div
+		dup	
+		Kdoop 
+		ge {
+			/Kdoop exch def
+			}
+			{
+			exit
+			} 
+		ifelse
+	 pop
+	} for
+exch 3.6 mul exch
+} def
+
+/GenCurve
+{
+	newpath
+	0 Rvnint moveto
+	0 .1 3
+	{
+		gsave
+%		newpath
+		dup
+		0 Rvnint moveto
+		0.2 exch 0 exch 
+		optimaV
+		exch pop
+		log 360 mul neg 360 add
+		rotate 
+		Rgrintsh Rvnint sub 3 div mul Rvnint add
+%		0 Rvnint moveto 
+		0 exch
+		lineto	
+%		0 exch  moveto
+%		currentpoint
+		stroke	
+		grestore
+	} for
+%	stroke
+} def
+
+%-------------------------------------------------------
+
+/GenSmallSh
+{
+    gsave
+    dup
+    dup
+    log 360 mul neg 360 add
+    rotate
+    -2 Rextsh .8 add moveto
+    7 string cvs
+    0 3 getinterval 
+    show
+%
+    -2 Rintsh -4 add moveto
+    10 mul
+    7 string cvs 
+    0 2 getinterval 
+    show
+%
+    grestore
+
+
+} def
+
+/GenLargeSh
+{   gsave
+    dup
+    dup
+    log 360 mul neg 360 add
+    rotate
+    -1 Rextsh .8 add moveto
+    2 string cvs show
+%
+    -2.5 Rintsh -4 add moveto
+    10 mul
+    3 string cvs show
+%
+     newpath
+    0 -1 Rintsh add moveto
+    0 Rextsh lineto
+    .3 setlinewidth
+    stroke
+
+    grestore
+} def
+%------------------------------------------------
+
+72 25.4 div           % 1 мм = 72/25.4 пунктов
+dup                   % дублировать значение на вершине стека
+scale                 % растянуть в это количество раз по обеим координатам
+100 150 translate     % установить начало координат в (100мм, 100мм)
+ 
+/Times-Roman findfont % взять шрифт Times-Roman
+Htextsh scalefont          % растянуть до размера 10 (у нас единица измерения - мм!)
+setfont               % установить выбранный шрифт
+ 
+%0 30 330 {            % цикл для углов от 0 до 330 с шагом 30
+%  gsave                 % запомнить текущее преобразование координат
+%    rotate              % повернуть систему координат (угол в градусах берём с вершины стека)
+%    15 0 moveto         % перейти в точку (15мм, 0мм)
+%    (Wikipedia) show    % написать слово текущим шрифтом
+%  grestore              % вернуть преобразование координат
+%} for                 % конец цикла for
+
+% newpath              % серый квадрат
+%        0 0 moveto
+%          0  72 rlineto
+%         72   0 rlineto
+%          0 -72 rlineto
+%     closepath
+%     0.5 setgray
+%     fill
+
+   newpath
+         0 0 2 0 360 arc
+    .2 setlinewidth
+    stroke			% Маркер центра
+
+   newpath
+         0 0 Rvn 0 360 arc
+    .2 setlinewidth
+    stroke			% Внешняя окружность
+
+   newpath
+         0 0 Rextsh 0 360 arc
+    .3 setlinewidth
+    stroke			% Внешняя окружность шкалы
+
+   newpath
+         0 0 Rctrsh 0 360 arc
+    .2 setlinewidth
+    stroke			% Центральная окружность шкалы
+
+   newpath
+         0 0 Rintsh 0 360 arc
+    .3 setlinewidth
+    stroke			% Внутренняя окружность шкалы
+
+1 .1 10 {
+    gsave
+    log 360 mul neg 360 add
+    rotate
+%
+    %1 mod
+%    eq {
+	%Rextsh 0 moveto
+	%(1) show
+%    } if
+    
+%
+    newpath
+    0 Rintsh moveto
+    0 Rextsh lineto
+    .01 setlinewidth
+    stroke
+    grestore
+} for				% Генерация шкалы
+
+1 1 9 {
+    GenLargeSh
+} for				% Генерация целочисленных подписей шкалы и десятичных рисок
+
+
+/Times-Roman findfont
+Htextsmallsh scalefont
+setfont 
+
+1.1 0.1 1.91 {
+    GenSmallSh
+} for				% Генерация не целочисленных подписей шкалы
+
+2.2 0.2 2.81 {
+    GenSmallSh
+} for				% Генерация не целочисленных подписей шкалы
+
+3.2 0.2 3.81 {
+    GenSmallSh
+} for				% Генерация не целочисленных подписей шкалы
+
+%--------------------------	
+% Генерация не целочисленных подписей шкалы
+    4.5 
+    GenSmallSh
+ 
+    5.5
+    GenSmallSh
+%----------------------------	
+
+%----------------------------	
+% Генерация концентрических окружностей
+Rvnint  Rgrintsh Rvnint sub 6 div Rgrintsh 0.1 add %
+{	newpath
+	0 exch 0 exch
+	0 360 arc 
+	.2 setlinewidth
+	stroke			
+}for
+
+
+GenCurve
+
+%----------------------------	
+
+
+showpage              % вывести страницу
+
