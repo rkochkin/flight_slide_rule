@@ -1,0 +1,64 @@
+x = 70:.5:150;
+k = 0:.5:6;
+R=100;
+E=5.6;
+p=32;
+appro=(31.34052-1.31976*x+0.02242 *x.^2-1.89196E-4* x.^3+8.03488E-7* x.^4-1.36024E-9*x.^5);
+Vx_Vy= [
+    
+    
+            ];
+
+pax= [ 1    1.85;
+       2    1.65;
+       3    1.5;
+       4    1.3;
+       5    1.15;
+       6    1.05;
+       7    1;
+       8    1.5;
+       9    1.4;
+       10   1.3;
+];
+
+hax= [  5       1.15;
+        5.5     1.1;
+        6       2.1;
+        7       1.85;
+        8       1.55;
+        9       1.4;
+        10      1.3
+];
+%y =x;
+%z=log(x);
+%p=log(1+x);
+%plot(y,z,y,p);
+%grid on;
+%y=;y
+%a=[x ; appro]
+
+fun1=appro+(E-x-R*appro)/(R);%
+fun2=appro+(E-x-R*appro)/(tan(pi/2)*p.^2+R);%
+fun3=appro+(E-x-R*appro)/(tan(pi/3)*p.^2+R);%
+fun4=appro+(E-x-R*appro)/(tan(pi/6)*p.^2+R);%
+
+
+fun5=appro+(E-x-R*appro)/(-tan(pi/3)*p.^2+R);%
+fun6=appro+(E-x-R*appro)/(-tan(pi/6)*p.^2+R);%
+
+%plot(x,appro*1000,vax(:,1),vax(:,2),'OK');
+subplot(2,1,1); plot(x,-appro);
+%xlabel('U, Volt');
+%ylabel('I, mA');
+%ylim([-7 8]);
+%grid on;
+
+
+subplot(2,1,2); plot(x,x./(appro.*3.6));
+
+grid on;
+
+figure
+polar( log (x./(appro.*3.6)),x);%
+%polar(90:0.5:180, (0:1:180)+4);
+%grid on;
